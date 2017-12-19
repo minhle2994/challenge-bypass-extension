@@ -231,6 +231,7 @@ function beforeSendHeaders(request) {
     // Create a pass and reload to send it to the edge
     const tokenToSpend = GetTokenForSpend();
     if (tokenToSpend == null) {
+        console.log("Cancel request");
         return {cancel: false};
     }
 
@@ -424,24 +425,45 @@ function checkMaxSpend(host) {
 }
 
 function countStoredTokens() {
-    const count = localStorage.getItem(STORAGE_KEY_COUNT);
-    if (count == null) {
-        return 0;
-    }
+    // const count = localStorage.getItem(STORAGE_KEY_COUNT);
+    // if (count == null) {
+    //     return 0;
+    // }
 
-    // We change the png file to show if tokens are stored or not
-    const countInt = JSON.parse(count);
-    updateIcon(countInt);
-    return countInt;
+    // // We change the png file to show if tokens are stored or not
+    // const countInt = JSON.parse(count);
+    // updateIcon(countInt);
+    // return countInt;
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('get', 'http://127.0.0.1:5000/count', false);
+    xhr.send(null);
+    if (xhr.status === 200) {
+        return parseInt(xhr.responseText);
+    } else {
+        return 0;
+    };
 }
 
 // Pops a token from storage for a redemption
 function GetTokenForSpend() {
-    let tokens = loadTokens();
-    const tokenToSpend = tokens[0];
-    tokens = tokens.slice(1);
-    storeTokens(tokens);
-    return tokenToSpend;
+    // let tokens = loadTokens();
+    // const tokenToSpend = tokens[0];
+    // tokens = tokens.slice(1);
+    // storeTokens(tokens);
+    // return tokenToSpend;
+
+    let xhr = new XMLHttpRequest();
+    xhr.open('get', 'http://127.0.0.1:5000/pop', false);
+    xhr.send(null);
+    if (xhr.status === 200 && xhr.responseText !== 'None') {
+        let t = JSON.parse(xhr.responseText);
+        let usablePoint = decodeStorablePoint(t.point);
+        let usableBlind = new sjcl.bn(t.blind);
+        return { token: t.token, point: usablePoint, blind: usableBlind }
+    } else {
+        return null;
+    };
 }
 
 // This is for persisting valid tokens after some manipulation, like a spend.
