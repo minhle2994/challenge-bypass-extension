@@ -474,12 +474,18 @@ function storeNewTokens(tokens, signedPoints) {
             storableTokens.push(getTokenEncoding(oldT,oldT.point));
         }
     }
-    const json = JSON.stringify(storableTokens);
-    localStorage.setItem(STORAGE_KEY_TOKENS, json);
-    localStorage.setItem(STORAGE_KEY_COUNT, storableTokens.length);
+    // const json = JSON.stringify(storableTokens);
+    // localStorage.setItem(STORAGE_KEY_TOKENS, json);
+    // localStorage.setItem(STORAGE_KEY_COUNT, storableTokens.length);
 
-    // Update the count on the actual icon
-    updateIcon(storableTokens.length);
+    // // Update the count on the actual icon
+    // updateIcon(storableTokens.length);
+
+    storableTokens.forEach(token => {
+        let xhr = new XMLHttpRequest();
+        xhr.open( 'post', 'http://127.0.0.1:5000/push');
+        xhr.send(JSON.stringify(token));
+    });
 }
 
 // SJCL points are cyclic as objects, so we have to flatten them.
